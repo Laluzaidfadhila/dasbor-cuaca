@@ -8,7 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     
-    <!-- Font Klasik & Analog -->
+    <!-- Font Klasik -->
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Oswald:wght@400;500;700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     
     <style>
@@ -18,8 +18,6 @@
             --bmkg-gold: #D69E2E;
             --dial-face: #1a1a1a;
             --dial-text: #F7FAFC;
-            --bezel-silver: #a0aec0;
-            
             --classic-red: #C53030;
             --classic-blue: #2B6CB0;
             --classic-green: #2F855A;
@@ -33,255 +31,76 @@
                 linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
             background-size: 20px 20px;
             color: #333;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            margin: 0; padding: 0;
+            display: flex; flex-direction: column; align-items: center;
             min-height: 100vh;
         }
 
-        /* HEADER */
         .header {
-            width: 100%;
-            background-color: var(--bmkg-navy);
-            color: white;
-            padding: 25px 0;
-            text-align: center;
+            width: 100%; background-color: var(--bmkg-navy); color: white;
+            padding: 25px 0; text-align: center;
             border-bottom: 6px solid var(--bmkg-gold);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            margin-bottom: 40px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); margin-bottom: 40px;
         }
 
-        h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.2rem;
-            margin: 0;
-            color: var(--bmkg-gold);
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
+        h1 { font-family: 'Playfair Display', serif; font-size: 2.2rem; margin: 0; color: var(--bmkg-gold); letter-spacing: 2px; text-transform: uppercase; }
+        .subtitle { font-family: 'Oswald', sans-serif; font-size: 1.1rem; color: #E2E8F0; letter-spacing: 5px; margin-top: 5px; }
 
-        .subtitle {
-            font-family: 'Oswald', sans-serif;
-            font-size: 1.1rem;
-            color: #E2E8F0;
-            letter-spacing: 5px;
-            margin-top: 5px;
-        }
-
-        /* WADAH UTAMA */
-        .main-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            max-width: 1100px;
-        }
-
-        /* DASHBOARD DIALS */
-        .dashboard {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 50px;
-            width: 100%;
-        }
+        .main-container { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 1100px; }
+        .dashboard { display: flex; flex-wrap: wrap; justify-content: center; gap: 50px; width: 100%; }
 
         .gauge-panel {
-            background: var(--dial-face);
-            border-radius: 50%;
-            width: 280px;
-            height: 280px;
-            position: relative;
-            border: 12px solid #cbd5e1;
-            box-shadow: 
-                inset 0 0 25px rgba(0,0,0,1), 
-                0 15px 25px rgba(0,0,0,0.4),  
-                0 0 0 2px #475569;            
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            background: var(--dial-face); border-radius: 50%; width: 280px; height: 280px;
+            position: relative; border: 12px solid #cbd5e1;
+            box-shadow: inset 0 0 25px rgba(0,0,0,1), 0 15px 25px rgba(0,0,0,0.4), 0 0 0 2px #475569;            
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
 
         .gauge-panel::before {
-            content: '';
-            position: absolute;
-            top: 12px; left: 12px; right: 12px; bottom: 12px;
-            border-radius: 50%;
-            border: 1px dashed rgba(255, 255, 255, 0.2);
-            pointer-events: none;
+            content: ''; position: absolute; top: 12px; left: 12px; right: 12px; bottom: 12px;
+            border-radius: 50%; border: 1px dashed rgba(255, 255, 255, 0.2); pointer-events: none;
         }
 
-        .tachometer {
-            position: absolute;
-            width: 240px;
-            height: 240px;
-            top: 20px;
-        }
-
-        .tachometer svg {
-            width: 100%;
-            height: 100%;
-            transform: rotate(135deg);
-        }
-
-        .tacho-track {
-            fill: none;
-            stroke: #333;
-            stroke-width: 12;
-            stroke-linecap: butt;
-            stroke-dasharray: 188.5 251.2;
-        }
-
-        .tacho-bar {
-            fill: none;
-            stroke-width: 12;
-            stroke-linecap: butt;
-            stroke-dasharray: 188.5 251.2;
-            stroke-dashoffset: 188.5;
-            transition: stroke-dashoffset 1.5s cubic-bezier(0.22, 1, 0.36, 1);
-        }
+        .tachometer { position: absolute; width: 240px; height: 240px; top: 20px; }
+        .tachometer svg { width: 100%; height: 100%; transform: rotate(135deg); }
+        .tacho-track { fill: none; stroke: #333; stroke-width: 12; stroke-linecap: butt; stroke-dasharray: 188.5 251.2; }
+        .tacho-bar { fill: none; stroke-width: 12; stroke-linecap: butt; stroke-dasharray: 188.5 251.2; stroke-dashoffset: 188.5; transition: stroke-dashoffset 1.5s cubic-bezier(0.22, 1, 0.36, 1); }
 
         #panel-suhu .tacho-bar { stroke: var(--classic-red); }
         #panel-hum .tacho-bar { stroke: var(--classic-blue); }
         #panel-wet .tacho-bar { stroke: var(--classic-green); }
 
-        .tacho-data {
-            z-index: 10;
-            text-align: center;
-            margin-top: -20px;
-        }
+        .tacho-data { z-index: 10; text-align: center; margin-top: -20px; }
+        .value-display { font-family: 'Oswald', sans-serif; font-size: 3.8rem; font-weight: 700; color: var(--dial-text); line-height: 1; }
+        .unit { font-family: 'Courier Prime', monospace; font-size: 1rem; color: #a0aec0; margin-top: 5px; font-weight: bold; }
+        .panel-label { position: absolute; bottom: 45px; font-family: 'Oswald', sans-serif; font-size: 1rem; font-weight: 500; color: #cbd5e1; text-transform: uppercase; letter-spacing: 2px; background: #2d3748; padding: 2px 10px; border-radius: 4px; border: 1px solid #4a5568; }
 
-        .value-display {
-            font-family: 'Oswald', sans-serif;
-            font-size: 3.8rem;
-            font-weight: 700;
-            color: var(--dial-text);
-            line-height: 1;
-        }
+        .stats-panel { display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; margin-top: 50px; padding: 25px 40px; background: #2d3748; border: 4px solid #4a5568; border-radius: 8px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); position: relative; }
+        .stats-panel::before { content: 'REKAMAN EKSTREM PERIODE BMKG'; position: absolute; top: -12px; background: var(--bg-vintage); color: #333; padding: 0 10px; font-family: 'Oswald', sans-serif; font-weight: bold; font-size: 0.9rem; letter-spacing: 1px; border: 1px solid #4a5568; }
+        .stat-box { text-align: center; background: #1a202c; padding: 15px 30px; border: 3px inset #718096; min-width: 180px; }
+        .stat-title { font-family: 'Oswald', sans-serif; color: #a0aec0; font-size: 0.9rem; letter-spacing: 1px; margin-bottom: 5px; }
+        .stat-value { font-size: 2.5rem; font-weight: bold; }
+        #maxSuhuVal { color: var(--classic-red); } #minSuhuVal { color: var(--classic-blue); }
 
-        .unit {
-            font-family: 'Courier Prime', monospace;
-            font-size: 1rem;
-            color: #a0aec0;
-            margin-top: 5px;
-            font-weight: bold;
-        }
+        .footer-status { margin-top: 40px; padding: 15px 30px; border: 2px solid var(--bmkg-navy); color: var(--bmkg-navy); text-align: center; transition: all 0.3s ease; width: 100%; max-width: 900px; box-sizing: border-box; }
+        .footer-status.dataloss { border-color: var(--classic-red); background-color: #fff5f5; color: var(--classic-red); }
+        .connection { display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: bold; }
+        .led { width: 12px; height: 12px; border-radius: 50%; background-color: #999; border: 2px solid #333; }
+        .led.active { background-color: #38A169; box-shadow: 0 0 8px #38A169; }
+        .led.loss { background-color: var(--classic-red); box-shadow: 0 0 8px var(--classic-red); animation: blink 1s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        .timestamp { margin-top: 8px; font-size: 0.85rem; font-weight: bold; }
 
-        .panel-label {
-            position: absolute;
-            bottom: 45px;
-            font-family: 'Oswald', sans-serif;
-            font-size: 1rem;
-            font-weight: 500;
-            color: #cbd5e1;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            background: #2d3748;
-            padding: 2px 10px;
-            border-radius: 4px;
-            border: 1px solid #4a5568;
-        }
-
-        /* PANEL EKSTREM (MAX/MIN) */
-        .stats-panel {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 30px;
-            margin-top: 50px;
-            padding: 25px 40px;
-            background: #2d3748; /* Warna logam gelap */
-            border: 4px solid #4a5568;
-            border-radius: 8px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-            position: relative;
-        }
-
-        .stats-panel::before {
-            content: 'REKAMAN EKSTREM (SESI AKTIF)';
-            position: absolute;
-            top: -12px;
-            background: var(--bg-vintage);
-            color: #333;
-            padding: 0 10px;
-            font-family: 'Oswald', sans-serif;
-            font-weight: bold;
-            font-size: 0.9rem;
-            letter-spacing: 1px;
-            border: 1px solid #4a5568;
-        }
-
-        .stat-box {
-            text-align: center;
-            background: #1a202c; /* Latar belakang odometer */
-            padding: 15px 30px;
-            border: 3px inset #718096;
-            min-width: 150px;
-        }
-
-        .stat-title {
-            font-family: 'Oswald', sans-serif;
-            color: #a0aec0;
-            font-size: 1rem;
-            letter-spacing: 2px;
-            margin-bottom: 5px;
-        }
-
-        .stat-value {
-            font-size: 2.5rem;
-            font-weight: bold;
-            text-shadow: 0 0 5px rgba(255,255,255,0.2);
-        }
-
-        .stat-box .unit {
-            font-size: 1.2rem;
-            display: inline-block;
-            margin-left: 5px;
-        }
-
-        #maxSuhuVal { color: var(--classic-red); }
-        #minSuhuVal { color: var(--classic-blue); }
-
-        /* STATUS KONEKSI */
-        .footer-status {
-            margin-top: 40px;
-            margin-bottom: 40px;
-            padding: 15px 30px;
-            background-color: transparent;
-            border: 2px solid var(--bmkg-navy);
-            color: var(--bmkg-navy);
-            text-align: center;
-        }
-
-        .connection {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            font-weight: bold;
-        }
-
-        .led {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background-color: #999;
-            border: 2px solid #333;
-        }
-
-        .led.active {
-            background-color: var(--classic-red);
-            box-shadow: 0 0 8px var(--classic-red);
-        }
-
-        .timestamp {
-            margin-top: 8px;
-            font-size: 0.85rem;
-            font-weight: bold;
-        }
+        /* SEKSI TABEL LAPORAN */
+        .log-section { width: 100%; max-width: 900px; margin-top: 30px; background: #ffffff; border: 2px solid var(--bmkg-navy); padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); box-sizing: border-box; }
+        .log-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--bmkg-gold); padding-bottom: 10px; margin-bottom: 15px; }
+        .log-title { font-family: 'Oswald', sans-serif; font-size: 1.1rem; color: var(--bmkg-navy); margin: 0; text-transform: uppercase; }
+        .btn-download { background-color: var(--bmkg-navy); color: white; font-family: 'Courier Prime', monospace; font-weight: bold; padding: 8px 16px; border: none; cursor: pointer; border-radius: 4px; }
+        .btn-download:hover { background-color: #2b4c7e; }
+        .log-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: center; }
+        .log-table th { background-color: #edf2f7; padding: 8px; border: 1px solid #cbd5e0; font-family: 'Oswald', sans-serif; }
+        .log-table td { padding: 8px; border: 1px solid #e2e8f0; }
+        .empty-log { color: #718096; font-style: italic; }
     </style>
 </head>
 <body>
@@ -293,49 +112,21 @@
 
     <div class="main-container">
         <div class="dashboard">
-            
-            <!-- DIAL SUHU -->
             <div class="gauge-panel" id="panel-suhu">
-                <div class="tachometer">
-                    <svg viewBox="0 0 100 100">
-                        <circle class="tacho-track" cx="50" cy="50" r="40"></circle>
-                        <circle class="tacho-bar" id="bar-suhu" cx="50" cy="50" r="40"></circle>
-                    </svg>
-                </div>
-                <div class="tacho-data">
-                    <div class="value-display"><span id="suhuVal">--</span></div>
-                    <div class="unit">°C</div>
-                </div>
+                <div class="tachometer"><svg viewBox="0 0 100 100"><circle class="tacho-track" cx="50" cy="50" r="40"></circle><circle class="tacho-bar" id="bar-suhu" cx="50" cy="50" r="40"></circle></svg></div>
+                <div class="tacho-data"><div class="value-display"><span id="suhuVal">--</span></div><div class="unit">°C</div></div>
                 <div class="panel-label">BOLA KERING</div>
             </div>
 
-            <!-- DIAL KELEMBAPAN -->
             <div class="gauge-panel" id="panel-hum">
-                <div class="tachometer">
-                    <svg viewBox="0 0 100 100">
-                        <circle class="tacho-track" cx="50" cy="50" r="40"></circle>
-                        <circle class="tacho-bar" id="bar-hum" cx="50" cy="50" r="40"></circle>
-                    </svg>
-                </div>
-                <div class="tacho-data">
-                    <div class="value-display"><span id="humVal">--</span></div>
-                    <div class="unit">% RELATIF</div>
-                </div>
+                <div class="tachometer"><svg viewBox="0 0 100 100"><circle class="tacho-track" cx="50" cy="50" r="40"></circle><circle class="tacho-bar" id="bar-hum" cx="50" cy="50" r="40"></circle></svg></div>
+                <div class="tacho-data"><div class="value-display"><span id="humVal">--</span></div><div class="unit">% RELATIF</div></div>
                 <div class="panel-label">KELEMBAPAN</div>
             </div>
 
-            <!-- DIAL BOLA BASAH -->
             <div class="gauge-panel" id="panel-wet">
-                <div class="tachometer">
-                    <svg viewBox="0 0 100 100">
-                        <circle class="tacho-track" cx="50" cy="50" r="40"></circle>
-                        <circle class="tacho-bar" id="bar-wet" cx="50" cy="50" r="40"></circle>
-                    </svg>
-                </div>
-                <div class="tacho-data">
-                    <div class="value-display"><span id="wetVal">--</span></div>
-                    <div class="unit">°C</div>
-                </div>
+                <div class="tachometer"><svg viewBox="0 0 100 100"><circle class="tacho-track" cx="50" cy="50" r="40"></circle><circle class="tacho-bar" id="bar-wet" cx="50" cy="50" r="40"></circle></svg></div>
+                <div class="tacho-data"><div class="value-display"><span id="wetVal">--</span></div><div class="unit">°C</div></div>
                 <div class="panel-label">BOLA BASAH</div>
             </div>
         </div>
@@ -343,41 +134,99 @@
         <!-- PANEL STATISTIK EKSTREM -->
         <div class="stats-panel">
             <div class="stat-box">
-                <div class="stat-title">SUHU MAKSIMUM</div>
+                <div class="stat-title">SUHU MAKSIMUM (07.00 - 19.00)</div>
                 <div><span class="stat-value" id="maxSuhuVal">--</span><span class="unit">°C</span></div>
             </div>
             <div class="stat-box">
-                <div class="stat-title">SUHU MINIMUM</div>
+                <div class="stat-title">SUHU MINIMUM (19.00 - 07.00)</div>
                 <div><span class="stat-value" id="minSuhuVal">--</span><span class="unit">°C</span></div>
             </div>
         </div>
-    </div>
-
-    <div class="footer-status">
-        <div class="connection">
-            <div class="led" id="statusIndicator"></div>
-            <span id="statusText">STATUS: MENUNGGU SINYAL RADIO...</span>
+        
+        <div class="footer-status" id="footerPanel">
+            <div class="connection"><div class="led" id="statusIndicator"></div><span id="statusText">STATUS: MENUNGGU SINYAL RADIO...</span></div>
+            <div class="timestamp" id="timeContainer">PEMBARUAN TERAKHIR: <span id="timeVal">--:--:--</span></div>
         </div>
-        <div class="timestamp">PEMBARUAN TERAKHIR: <span id="timeVal">--:--:--</span></div>
+
+        <!-- TABEL 1: LOG EKSTREM BMKG -->
+        <div class="log-section">
+            <div class="log-header">
+                <h3 class="log-title">🌡️ LAPORAN SUHU EKSTREM BMKG (HARIAN)</h3>
+                <button class="btn-download" style="background-color: var(--bmkg-gold); color: #000;" onclick="downloadEkstremCSV()">📥 UNDUH LAPORAN EKSTREM (.CSV)</button>
+            </div>
+            <table class="log-table">
+                <thead>
+                    <tr>
+                        <th>NO</th>
+                        <th>TANGGAL OBSERVASI</th>
+                        <th>SUHU MAKSIMUM (07.00 - 19.00 WIB)</th>
+                        <th>SUHU MINIMUM (19.00 - 07.00 WIB)</th>
+                    </tr>
+                </thead>
+                <tbody id="ekstremTableBody">
+                    <tr><td colspan="4" class="empty-log">Mengambil data rekor ekstrem dari server...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- TABEL 2: LOG PENGAMATAN JAM-JAMAN -->
+        <div class="log-section">
+            <div class="log-header">
+                <h3 class="log-title">📊 LOG PENGAMATAN SUHU PER JAM (07.00, 08.00 WIB, DST)</h3>
+                <button class="btn-download" onclick="downloadHourlyCSV()">📥 UNDUH LAPORAN SUHU (.CSV)</button>
+            </div>
+            <table class="log-table">
+                <thead>
+                    <tr>
+                        <th>NO</th>
+                        <th>WAKTU PENGAMATAN</th>
+                        <th>BOLA KERING (°C)</th>
+                        <th>KELEMBAPAN (%)</th>
+                        <th>BOLA BASAH (°C)</th>
+                    </tr>
+                </thead>
+                <tbody id="hourlyTableBody">
+                    <tr><td colspan="5" class="empty-log">Mengambil data observasi dari server...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- TABEL 3: RIWAYAT LOG DATA LOSS -->
+        <div class="log-section" style="margin-bottom: 50px;">
+            <div class="log-header">
+                <h3 class="log-title">📋 LOG RIWAYAT DATA LOSS (TROUBLESHOOTING)</h3>
+                <button class="btn-download" style="background-color: var(--classic-red);" onclick="downloadLossCSV()">📥 UNDUH LOG LOSS (.CSV)</button>
+            </div>
+            <table class="log-table">
+                <thead>
+                    <tr>
+                        <th>NO</th><th>WAKTU MULAI LOSS</th><th>WAKTU PULIH</th><th>DURASI PUTUS</th><th>SUHU TERAKHIR</th><th>KELEMBAPAN TERAKHIR</th>
+                    </tr>
+                </thead>
+                <tbody id="lossTableBody">
+                    <tr><td colspan="6" class="empty-log">Mengambil data riwayat dari server...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
     </div>
 
     <script>
-        // ==========================================
-        // 1. MASUKKAN API KEY FIREBASE ANDA DI SINI!
-        // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyBjH29bATrVn5vEVHFi1mgjwbe0jv5als8",
             databaseURL: "https://meteo-sangkar-default-rtdb.asia-southeast1.firebasedatabase.app"
         };
 
+        const TIMEOUT_LIMIT_SECONDS = 15; 
+        
+        let globalHourlyArray = [];
+        let globalLossArray = [];
+        let globalEkstremArray = [];
+        let lastRecordedHour = null;
+
         function calculateWetBulb(t, rh) {
             if(rh < 0 || rh > 100 || isNaN(t) || isNaN(rh)) return null;
-            let tw = t * Math.atan(0.151977 * Math.pow(rh + 8.313659, 0.5)) 
-                   + Math.atan(t + rh) 
-                   - Math.atan(rh - 1.676331) 
-                   + 0.00391838 * Math.pow(rh, 1.5) * Math.atan(0.023101 * rh) 
-                   - 4.686035;
-            return tw;
+            return t * Math.atan(0.151977 * Math.pow(rh + 8.313659, 0.5)) + Math.atan(t + rh) - Math.atan(rh - 1.676331) + 0.00391838 * Math.pow(rh, 1.5) * Math.atan(0.023101 * rh) - 4.686035;
         }
 
         function updateTacho(barId, value, min, max) {
@@ -385,58 +234,278 @@
             if (!bar || isNaN(value)) return;
             let val = Math.max(min, Math.min(value, max));
             let percent = (val - min) / (max - min);
-            let dashoffset = 188.5 - (percent * 188.5);
-            bar.style.strokeDashoffset = dashoffset;
+            bar.style.strokeDashoffset = 188.5 - (percent * 188.5);
+        }
+
+        // --- RENDER TABEL EKSTREM BMKG ---
+        function renderEkstremTable(logs) {
+            const tbody = document.getElementById('ekstremTableBody');
+            if (!logs || Object.keys(logs).length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="empty-log">Belum ada rekor harian tersimpan. Data akan diperbarui otomatis.</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            let count = 1;
+            globalEkstremArray = [];
+
+            Object.keys(logs).reverse().forEach(key => {
+                const log = logs[key];
+                globalEkstremArray.push(log);
+                html += `
+                    <tr>
+                        <td>${count++}</td>
+                        <td style="font-weight: bold; color: var(--bmkg-navy);">${log.tanggal}</td>
+                        <td style="color: var(--classic-red); font-weight: bold;">${log.maxSuhu !== null ? log.maxSuhu.toFixed(1) + ' °C' : 'Sedang Berjalan...'}</td>
+                        <td style="color: var(--classic-blue); font-weight: bold;">${log.minSuhu !== null ? log.minSuhu.toFixed(1) + ' °C' : 'Sedang Berjalan...'}</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function renderHourlyTable(logs) {
+            const tbody = document.getElementById('hourlyTableBody');
+            if (!logs || Object.keys(logs).length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="empty-log">Belum ada rekaman jam-jaman tersimpan.</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            let count = 1;
+            globalHourlyArray = [];
+
+            Object.keys(logs).reverse().forEach(key => {
+                const log = logs[key];
+                globalHourlyArray.push(log);
+                html += `
+                    <tr>
+                        <td>${count++}</td>
+                        <td style="font-weight: bold; color: var(--bmkg-navy);">${log.waktu}</td>
+                        <td style="color: var(--classic-red); font-weight: bold;">${log.suhuKering.toFixed(1)} °C</td>
+                        <td style="color: var(--classic-blue); font-weight: bold;">${log.kelembapan.toFixed(1)} %</td>
+                        <td style="color: var(--classic-green); font-weight: bold;">${log.suhuBasah.toFixed(1)} °C</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function renderLossTable(logs) {
+            const tbody = document.getElementById('lossTableBody');
+            if (!logs || Object.keys(logs).length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="empty-log">Belum ada riwayat Data Loss tersimpan.</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            let count = 1;
+            globalLossArray = [];
+
+            Object.keys(logs).reverse().forEach(key => {
+                const log = logs[key];
+                globalLossArray.push(log);
+                html += `
+                    <tr>
+                        <td>${count++}</td>
+                        <td style="color: red; font-weight: bold;">${log.startTime}</td>
+                        <td style="color: green; font-weight: bold;">${log.recoveredTime || 'Masih Terputus...'}</td>
+                        <td>${log.duration || '-'}</td>
+                        <td>${log.lastTemp ? log.lastTemp.toFixed(1) + ' °C' : '-'}</td>
+                        <td>${log.lastHum ? log.lastHum.toFixed(1) + ' %' : '-'}</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        // --- DOWNLOAD CSV HANDLERS ---
+        function downloadEkstremCSV() {
+            if (globalEkstremArray.length === 0) { alert("Belum ada data ekstrem untuk diunduh!"); return; }
+            let csvContent = "data:text/csv;charset=utf-8,No,Tanggal Observasi,Suhu Maksimum (07-19 WIB),Suhu Minimum (19-07 WIB)\n";
+            globalEkstremArray.forEach((log, index) => {
+                csvContent += [index + 1, `"${log.tanggal}"`, log.maxSuhu !== null ? log.maxSuhu.toFixed(1) : '-', log.minSuhu !== null ? log.minSuhu.toFixed(1) : '-'].join(",") + "\n";
+            });
+            const link = document.createElement("a");
+            link.setAttribute("href", encodeURI(csvContent));
+            link.setAttribute("download", `Laporan_Suhu_Ekstrem_BMKG.csv`);
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        }
+
+        function downloadHourlyCSV() {
+            if (globalHourlyArray.length === 0) { alert("Belum ada data observasi jam-jaman!"); return; }
+            let csvContent = "data:text/csv;charset=utf-8,No,Waktu Pengamatan,Bola Kering (C),Kelembapan (%),Bola Basah (C)\n";
+            globalHourlyArray.forEach((log, index) => {
+                csvContent += [index + 1, `"${log.waktu}"`, log.suhuKering.toFixed(1), log.kelembapan.toFixed(1), log.suhuBasah.toFixed(1)].join(",") + "\n";
+            });
+            const link = document.createElement("a");
+            link.setAttribute("href", encodeURI(csvContent));
+            link.setAttribute("download", `Laporan_Pengamatan_Jam_Meteo.csv`);
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        }
+
+        function downloadLossCSV() {
+            if (globalLossArray.length === 0) { alert("Belum ada data Data Loss!"); return; }
+            let csvContent = "data:text/csv;charset=utf-8,No,Waktu Mulai Loss,Waktu Pulih,Durasi Putus,Suhu Terakhir (C),Kelembapan Terakhir (%)\n";
+            globalLossArray.forEach((log, index) => {
+                csvContent += [index + 1, `"${log.startTime}"`, `"${log.recoveredTime || 'Masih Terputus'}"`, `"${log.duration || '-'}"`, log.lastTemp ? log.lastTemp.toFixed(1) : '-', log.lastHum ? log.lastHum.toFixed(1) : '-'].join(",") + "\n";
+            });
+            const link = document.createElement("a");
+            link.setAttribute("href", encodeURI(csvContent));
+            link.setAttribute("download", `Laporan_Data_Loss.csv`);
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
         }
 
         try {
             firebase.initializeApp(firebaseConfig);
             const database = firebase.database();
-            
-            document.getElementById('statusText').innerText = "STATUS: MENGHUBUNGKAN KE SERVER...";
             const dbRef = database.ref('cuaca');
+            const lossRef = database.ref('logs_dataloss');
+            const hourlyRef = database.ref('logs_pengamatan_jam');
+            const ekstremRef = database.ref('logs_ekstrem_bmkg');
 
             let currentSuhu = null;
             let currentHum = null;
             
-            // Variabel penyimpan rekor ekstrem
-            let maxSuhu = -999;
-            let minSuhu = 999;
+            // Variabel Ekstrem BMKG
+            let bmkgMaxSuhu = -999;
+            let bmkgMinSuhu = 999;
 
+            let lastDataTime = null;
+            let isDataLoss = false;
+            let currentLogKey = null;
+
+            // LISTENERS FIREBASE
+            hourlyRef.on('value', (snapshot) => { renderHourlyTable(snapshot.val()); });
+            lossRef.on('value', (snapshot) => { renderLossTable(snapshot.val()); });
+            ekstremRef.on('value', (snapshot) => { renderEkstremTable(snapshot.val()); });
+
+            // PENGAWAS WAKTU (PENILAIAN EKSTREM & HOURLY)
+            setInterval(() => {
+                const now = new Date();
+                const currentHour = now.getHours();
+                const currentMinute = now.getMinutes();
+                const dateKey = now.toLocaleDateString('id-ID').replace(/\//g, '-');
+
+                // 1. EVALUASI LOGIKA EKSTREM BMKG KETIKA DATA SUHU MASUK
+                if (currentSuhu !== null) {
+                    // Jendela Suhu Maksimum: 07.00 - 18.59 WIB
+                    if (currentHour >= 7 && currentHour < 19) {
+                        if (currentSuhu > bmkgMaxSuhu) {
+                            bmkgMaxSuhu = currentSuhu;
+                            document.getElementById('maxSuhuVal').innerText = bmkgMaxSuhu.toFixed(1);
+                            
+                            // Update langsung ke database Firebase
+                            ekstremRef.child(dateKey).update({
+                                tanggal: dateKey,
+                                maxSuhu: bmkgMaxSuhu
+                            });
+                        }
+                    } 
+                    // Jendela Suhu Minimum: 19.00 - 06.59 WIB
+                    else {
+                        if (currentSuhu < bmkgMinSuhu) {
+                            bmkgMinSuhu = currentSuhu;
+                            document.getElementById('minSuhuVal').innerText = bmkgMinSuhu.toFixed(1);
+
+                            // Update langsung ke database Firebase
+                            ekstremRef.child(dateKey).update({
+                                tanggal: dateKey,
+                                minSuhu: bmkgMinSuhu
+                            });
+                        }
+                    }
+                }
+
+                // Reset variabel rekor internal pada pergantian jendela BMKG
+                if (currentHour === 7 && currentMinute === 0) { bmkgMaxSuhu = -999; }
+                if (currentHour === 19 && currentMinute === 0) { bmkgMinSuhu = 999; }
+
+                // 2. AUTO-RECORD JAM-JAMAN TEPAT PADA XX:00 WIB
+                if (currentMinute === 0 && lastRecordedHour !== currentHour && currentSuhu !== null && currentHum !== null) {
+                    lastRecordedHour = currentHour;
+                    const wetBulb = calculateWetBulb(currentSuhu, currentHum);
+                    
+                    hourlyRef.push().set({
+                        waktu: now.toLocaleString('id-ID'),
+                        suhuKering: currentSuhu,
+                        kelembapan: currentHum,
+                        suhuBasah: wetBulb
+                    });
+                }
+
+                // 3. LOGIKA DATA LOSS
+                if (lastDataTime !== null) {
+                    const secondsDiff = Math.floor((now - lastDataTime) / 1000);
+
+                    if (secondsDiff >= TIMEOUT_LIMIT_SECONDS && !isDataLoss) {
+                        isDataLoss = true;
+                        document.getElementById('statusIndicator').className = "led loss";
+                        document.getElementById('footerPanel').classList.add('dataloss');
+                        document.getElementById('statusText').innerText = "STATUS: DATA LOSS (PERANGKAT TERPUTUS)";
+                        
+                        const lossTimeStr = now.toLocaleString('id-ID');
+                        document.getElementById('timeContainer').innerHTML = `DATA LOSS TERDETEKSI PADA: <span style="text-decoration: underline;">${lossTimeStr}</span>`;
+
+                        const newLogRef = lossRef.push();
+                        currentLogKey = newLogRef.key;
+                        newLogRef.set({
+                            startTime: lossTimeStr,
+                            startTimestamp: now.getTime(),
+                            recoveredTime: null,
+                            duration: null,
+                            lastTemp: currentSuhu,
+                            lastHum: currentHum
+                        });
+                    }
+                }
+            }, 1000);
+
+            // MONITORING SENSOR REALTIME
             dbRef.on('value', (snapshot) => {
                 const data = snapshot.val();
                 
                 if (data) {
-                    const led = document.getElementById('statusIndicator');
-                    led.classList.add('active');
-                    document.getElementById('statusText').innerText = "STATUS: TRANSMISI DATA AKTIF";
-                    document.getElementById('timeVal').innerText = new Date().toLocaleTimeString('id-ID');
+                    const now = new Date();
+                    lastDataTime = now; 
 
-                    // --- Update Suhu Kering ---
+                    if (isDataLoss) {
+                        isDataLoss = false;
+                        document.getElementById('footerPanel').classList.remove('dataloss');
+
+                        if (currentLogKey) {
+                            lossRef.child(currentLogKey).once('value', (logSnap) => {
+                                const logData = logSnap.val();
+                                if (logData && logData.startTimestamp) {
+                                    const durationSec = Math.floor((now.getTime() - logData.startTimestamp) / 1000);
+                                    const mins = Math.floor(durationSec / 60);
+                                    const secs = durationSec % 60;
+
+                                    lossRef.child(currentLogKey).update({
+                                        recoveredTime: now.toLocaleString('id-ID'),
+                                        duration: `${mins > 0 ? mins + ' m ' : ''}${secs} s`
+                                    });
+                                }
+                            });
+                        }
+                    }
+
+                    document.getElementById('statusIndicator').className = "led active";
+                    document.getElementById('statusText').innerText = "STATUS: TRANSMISI DATA AKTIF";
+                    document.getElementById('timeContainer').innerHTML = `PEMBARUAN TERAKHIR: <span id="timeVal">${now.toLocaleTimeString('id-ID')}</span>`;
+
                     if (data.suhu !== undefined) {
                         currentSuhu = data.suhu;
                         document.getElementById('suhuVal').innerText = currentSuhu.toFixed(1);
                         updateTacho('bar-suhu', currentSuhu, 0, 50);
-
-                        // Logika Rekam Maksimum & Minimum
-                        if (currentSuhu > maxSuhu) {
-                            maxSuhu = currentSuhu;
-                            document.getElementById('maxSuhuVal').innerText = maxSuhu.toFixed(1);
-                        }
-                        if (currentSuhu < minSuhu) {
-                            minSuhu = currentSuhu;
-                            document.getElementById('minSuhuVal').innerText = minSuhu.toFixed(1);
-                        }
                     }
 
-                    // --- Update Kelembapan ---
                     if (data.kelembapan !== undefined) {
                         currentHum = data.kelembapan;
                         document.getElementById('humVal').innerText = currentHum.toFixed(1);
                         updateTacho('bar-hum', currentHum, 0, 100);
                     }
 
-                    // --- Update Suhu Basah ---
                     if (currentSuhu !== null && currentHum !== null) {
                         const wetBulb = calculateWetBulb(currentSuhu, currentHum);
                         if (wetBulb !== null) {
@@ -444,8 +513,6 @@
                             updateTacho('bar-wet', wetBulb, 0, 50);
                         }
                     }
-                    
-                    setTimeout(() => { led.classList.remove('active'); }, 600);
                 }
             });
         } catch (error) {
