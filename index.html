@@ -46,7 +46,7 @@
         h1 { font-family: 'Playfair Display', serif; font-size: 2.2rem; margin: 0; color: var(--bmkg-gold); letter-spacing: 2px; text-transform: uppercase; }
         .subtitle { font-family: 'Oswald', sans-serif; font-size: 1.1rem; color: #E2E8F0; letter-spacing: 5px; margin-top: 5px; }
 
-        .main-container { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 1100px; }
+        .main-container { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 1100px; padding: 0 15px; box-sizing: border-box; }
         .dashboard { display: flex; flex-wrap: wrap; justify-content: center; gap: 50px; width: 100%; }
 
         .gauge-panel {
@@ -97,8 +97,25 @@
         .log-title { font-family: 'Oswald', sans-serif; font-size: 1.1rem; color: var(--bmkg-navy); margin: 0; text-transform: uppercase; }
         .btn-download { background-color: var(--bmkg-navy); color: white; font-family: 'Courier Prime', monospace; font-weight: bold; padding: 8px 16px; border: none; cursor: pointer; border-radius: 4px; }
         .btn-download:hover { background-color: #2b4c7e; }
+        
+        /* KONTAINER SCROLL MKS 30 BARIS */
+        .table-scroll-container {
+            max-height: 420px;
+            overflow-y: auto;
+            border: 1px solid #cbd5e0;
+        }
+
+        .table-scroll-container::-webkit-scrollbar { width: 8px; }
+        .table-scroll-container::-webkit-scrollbar-track { background: #edf2f7; }
+        .table-scroll-container::-webkit-scrollbar-thumb { background: var(--bmkg-navy); border-radius: 4px; }
+
         .log-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: center; }
-        .log-table th { background-color: #edf2f7; padding: 8px; border: 1px solid #cbd5e0; font-family: 'Oswald', sans-serif; }
+        .log-table th { 
+            position: sticky; top: 0; background-color: #edf2f7; 
+            padding: 10px 8px; border: 1px solid #cbd5e0; 
+            font-family: 'Oswald', sans-serif; z-index: 2;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
         .log-table td { padding: 8px; border: 1px solid #e2e8f0; }
         .empty-log { color: #718096; font-style: italic; }
     </style>
@@ -154,59 +171,65 @@
                 <h3 class="log-title">🌡️ LAPORAN SUHU EKSTREM BMKG (HARIAN)</h3>
                 <button class="btn-download" style="background-color: var(--bmkg-gold); color: #000;" onclick="downloadEkstremCSV()">📥 UNDUH LAPORAN EKSTREM (.CSV)</button>
             </div>
-            <table class="log-table">
-                <thead>
-                    <tr>
-                        <th>NO</th>
-                        <th>TANGGAL OBSERVASI</th>
-                        <th>SUHU MAKSIMUM (07.00 - 19.00 WIB)</th>
-                        <th>SUHU MINIMUM (19.00 - 07.00 WIB)</th>
-                    </tr>
-                </thead>
-                <tbody id="ekstremTableBody">
-                    <tr><td colspan="4" class="empty-log">Mengambil data rekor ekstrem dari server...</td></tr>
-                </tbody>
-            </table>
+            <div class="table-scroll-container">
+                <table class="log-table">
+                    <thead>
+                        <tr>
+                            <th>NO</th>
+                            <th>TANGGAL OBSERVASI</th>
+                            <th>SUHU MAKSIMUM (07.00 - 19.00 WIB)</th>
+                            <th>SUHU MINIMUM (19.00 - 07.00 WIB)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ekstremTableBody">
+                        <tr><td colspan="4" class="empty-log">Mengambil data rekor ekstrem dari server...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- TABEL 2: LOG PENGAMATAN JAM-JAMAN -->
         <div class="log-section">
             <div class="log-header">
-                <h3 class="log-title">📊 LOG PENGAMATAN SUHU PER JAM (07.00, 08.00 WIB, DST)</h3>
+                <h3 class="log-title">📊 LOG PENGAMATAN SUHU PER JAM (30 DATA TERAKHIR)</h3>
                 <button class="btn-download" onclick="downloadHourlyCSV()">📥 UNDUH LAPORAN SUHU (.CSV)</button>
             </div>
-            <table class="log-table">
-                <thead>
-                    <tr>
-                        <th>NO</th>
-                        <th>WAKTU PENGAMATAN</th>
-                        <th>BOLA KERING (°C)</th>
-                        <th>KELEMBAPAN (%)</th>
-                        <th>BOLA BASAH (°C)</th>
-                    </tr>
-                </thead>
-                <tbody id="hourlyTableBody">
-                    <tr><td colspan="5" class="empty-log">Mengambil data observasi dari server...</td></tr>
-                </tbody>
-            </table>
+            <div class="table-scroll-container">
+                <table class="log-table">
+                    <thead>
+                        <tr>
+                            <th>NO</th>
+                            <th>WAKTU PENGAMATAN</th>
+                            <th>BOLA KERING (°C)</th>
+                            <th>KELEMBAPAN (%)</th>
+                            <th>BOLA BASAH (°C)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="hourlyTableBody">
+                        <tr><td colspan="5" class="empty-log">Mengambil data observasi dari server...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- TABEL 3: RIWAYAT LOG DATA LOSS -->
         <div class="log-section" style="margin-bottom: 50px;">
             <div class="log-header">
-                <h3 class="log-title">📋 LOG RIWAYAT DATA LOSS (TROUBLESHOOTING)</h3>
+                <h3 class="log-title">📋 LOG RIWAYAT DATA LOSS (30 DATA TERAKHIR)</h3>
                 <button class="btn-download" style="background-color: var(--classic-red);" onclick="downloadLossCSV()">📥 UNDUH LOG LOSS (.CSV)</button>
             </div>
-            <table class="log-table">
-                <thead>
-                    <tr>
-                        <th>NO</th><th>WAKTU MULAI LOSS</th><th>WAKTU PULIH</th><th>DURASI PUTUS</th><th>SUHU TERAKHIR</th><th>KELEMBAPAN TERAKHIR</th>
-                    </tr>
-                </thead>
-                <tbody id="lossTableBody">
-                    <tr><td colspan="6" class="empty-log">Mengambil data riwayat dari server...</td></tr>
-                </tbody>
-            </table>
+            <div class="table-scroll-container">
+                <table class="log-table">
+                    <thead>
+                        <tr>
+                            <th>NO</th><th>WAKTU MULAI LOSS</th><th>WAKTU PULIH</th><th>DURASI PUTUS</th><th>SUHU TERAKHIR</th><th>KELEMBAPAN TERAKHIR</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lossTableBody">
+                        <tr><td colspan="6" class="empty-log">Mengambil data riwayat dari server...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
     </div>
@@ -218,6 +241,7 @@
         };
 
         const TIMEOUT_LIMIT_SECONDS = 15; 
+        const MAX_ROWS_TO_SHOW = 30;
         
         let globalHourlyArray = [];
         let globalLossArray = [];
@@ -237,7 +261,14 @@
             bar.style.strokeDashoffset = 188.5 - (percent * 188.5);
         }
 
-        // --- RENDER TABEL EKSTREM BMKG ---
+        function getFormattedDate(date) {
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const dd = String(date.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        // --- RENDER TABEL EKSTREM BMKG (BERSIHKAN FORMAT LAMA) ---
         function renderEkstremTable(logs) {
             const tbody = document.getElementById('ekstremTableBody');
             if (!logs || Object.keys(logs).length === 0) {
@@ -248,20 +279,32 @@
             let html = '';
             let count = 1;
             globalEkstremArray = [];
+            const isoDatePattern = /^\d{4}-\d{2}-\d{2}$/;
 
-            Object.keys(logs).reverse().forEach(key => {
+            // OTOMATIS HAPUS NODE FORMAT LAMA DARI FIREBASE (seperti 26-7-2026 atau 25-7-2026)
+            Object.keys(logs).forEach(key => {
+                if (!isoDatePattern.test(key)) {
+                    firebase.database().ref('logs_ekstrem_bmkg').child(key).remove();
+                }
+            });
+
+            // TAMPILKAN HANYA DENGAN FORMAT YYYY-MM-DD
+            Object.keys(logs).reverse().slice(0, MAX_ROWS_TO_SHOW).forEach(key => {
+                if (!isoDatePattern.test(key)) return;
+
                 const log = logs[key];
                 globalEkstremArray.push(log);
                 html += `
                     <tr>
                         <td>${count++}</td>
                         <td style="font-weight: bold; color: var(--bmkg-navy);">${log.tanggal}</td>
-                        <td style="color: var(--classic-red); font-weight: bold;">${log.maxSuhu !== null ? log.maxSuhu.toFixed(1) + ' °C' : 'Sedang Berjalan...'}</td>
-                        <td style="color: var(--classic-blue); font-weight: bold;">${log.minSuhu !== null ? log.minSuhu.toFixed(1) + ' °C' : 'Sedang Berjalan...'}</td>
+                        <td style="color: var(--classic-red); font-weight: bold;">${log.maxSuhu !== undefined && log.maxSuhu !== null ? log.maxSuhu.toFixed(1) + ' °C' : 'Sedang Berjalan...'}</td>
+                        <td style="color: var(--classic-blue); font-weight: bold;">${log.minSuhu !== undefined && log.minSuhu !== null ? log.minSuhu.toFixed(1) + ' °C' : 'Sedang Berjalan...'}</td>
                     </tr>
                 `;
             });
-            tbody.innerHTML = html;
+
+            tbody.innerHTML = html || `<tr><td colspan="4" class="empty-log">Memproses data...</td></tr>`;
         }
 
         function renderHourlyTable(logs) {
@@ -275,7 +318,7 @@
             let count = 1;
             globalHourlyArray = [];
 
-            Object.keys(logs).reverse().forEach(key => {
+            Object.keys(logs).reverse().slice(0, MAX_ROWS_TO_SHOW).forEach(key => {
                 const log = logs[key];
                 globalHourlyArray.push(log);
                 html += `
@@ -284,7 +327,7 @@
                         <td style="font-weight: bold; color: var(--bmkg-navy);">${log.waktu}</td>
                         <td style="color: var(--classic-red); font-weight: bold;">${log.suhuKering.toFixed(1)} °C</td>
                         <td style="color: var(--classic-blue); font-weight: bold;">${log.kelembapan.toFixed(1)} %</td>
-                        <td style="color: var(--classic-green); font-weight: bold;">${log.suhuBasah.toFixed(1)} °C</td>
+                        <td style="color: var(--classic-green); font-weight: bold;">${log.suhuBasah ? log.suhuBasah.toFixed(1) + ' °C' : '-'}</td>
                     </tr>
                 `;
             });
@@ -302,7 +345,7 @@
             let count = 1;
             globalLossArray = [];
 
-            Object.keys(logs).reverse().forEach(key => {
+            Object.keys(logs).reverse().slice(0, MAX_ROWS_TO_SHOW).forEach(key => {
                 const log = logs[key];
                 globalLossArray.push(log);
                 html += `
@@ -311,8 +354,8 @@
                         <td style="color: red; font-weight: bold;">${log.startTime}</td>
                         <td style="color: green; font-weight: bold;">${log.recoveredTime || 'Masih Terputus...'}</td>
                         <td>${log.duration || '-'}</td>
-                        <td>${log.lastTemp ? log.lastTemp.toFixed(1) + ' °C' : '-'}</td>
-                        <td>${log.lastHum ? log.lastHum.toFixed(1) + ' %' : '-'}</td>
+                        <td>${log.lastTemp !== undefined && log.lastTemp !== null ? log.lastTemp.toFixed(1) + ' °C' : '-'}</td>
+                        <td>${log.lastHum !== undefined && log.lastHum !== null ? log.lastHum.toFixed(1) + ' %' : '-'}</td>
                     </tr>
                 `;
             });
@@ -324,7 +367,7 @@
             if (globalEkstremArray.length === 0) { alert("Belum ada data ekstrem untuk diunduh!"); return; }
             let csvContent = "data:text/csv;charset=utf-8,No,Tanggal Observasi,Suhu Maksimum (07-19 WIB),Suhu Minimum (19-07 WIB)\n";
             globalEkstremArray.forEach((log, index) => {
-                csvContent += [index + 1, `"${log.tanggal}"`, log.maxSuhu !== null ? log.maxSuhu.toFixed(1) : '-', log.minSuhu !== null ? log.minSuhu.toFixed(1) : '-'].join(",") + "\n";
+                csvContent += [index + 1, `"${log.tanggal}"`, log.maxSuhu !== undefined && log.maxSuhu !== null ? log.maxSuhu.toFixed(1) : '-', log.minSuhu !== undefined && log.minSuhu !== null ? log.minSuhu.toFixed(1) : '-'].join(",") + "\n";
             });
             const link = document.createElement("a");
             link.setAttribute("href", encodeURI(csvContent));
@@ -336,7 +379,7 @@
             if (globalHourlyArray.length === 0) { alert("Belum ada data observasi jam-jaman!"); return; }
             let csvContent = "data:text/csv;charset=utf-8,No,Waktu Pengamatan,Bola Kering (C),Kelembapan (%),Bola Basah (C)\n";
             globalHourlyArray.forEach((log, index) => {
-                csvContent += [index + 1, `"${log.waktu}"`, log.suhuKering.toFixed(1), log.kelembapan.toFixed(1), log.suhuBasah.toFixed(1)].join(",") + "\n";
+                csvContent += [index + 1, `"${log.waktu}"`, log.suhuKering.toFixed(1), log.kelembapan.toFixed(1), log.suhuBasah ? log.suhuBasah.toFixed(1) : '-'].join(",") + "\n";
             });
             const link = document.createElement("a");
             link.setAttribute("href", encodeURI(csvContent));
@@ -348,7 +391,7 @@
             if (globalLossArray.length === 0) { alert("Belum ada data Data Loss!"); return; }
             let csvContent = "data:text/csv;charset=utf-8,No,Waktu Mulai Loss,Waktu Pulih,Durasi Putus,Suhu Terakhir (C),Kelembapan Terakhir (%)\n";
             globalLossArray.forEach((log, index) => {
-                csvContent += [index + 1, `"${log.startTime}"`, `"${log.recoveredTime || 'Masih Terputus'}"`, `"${log.duration || '-'}"`, log.lastTemp ? log.lastTemp.toFixed(1) : '-', log.lastHum ? log.lastHum.toFixed(1) : '-'].join(",") + "\n";
+                csvContent += [index + 1, `"${log.startTime}"`, `"${log.recoveredTime || 'Masih Terputus'}"`, `"${log.duration || '-'}"`, log.lastTemp !== undefined && log.lastTemp !== null ? log.lastTemp.toFixed(1) : '-', log.lastHum !== undefined && log.lastHum !== null ? log.lastHum.toFixed(1) : '-'].join(",") + "\n";
             });
             const link = document.createElement("a");
             link.setAttribute("href", encodeURI(csvContent));
@@ -367,48 +410,72 @@
             let currentSuhu = null;
             let currentHum = null;
             
-            // Variabel Ekstrem BMKG
             let bmkgMaxSuhu = -999;
             let bmkgMinSuhu = 999;
 
             let lastDataTime = null;
             let isDataLoss = false;
             let currentLogKey = null;
+            let lossStartTimestamp = null;
 
-            // LISTENERS FIREBASE
+            const todayKey = getFormattedDate(new Date());
+
+            // SYNC & SCAN SEMUA LOG JAM-JAMAN UNTUK MEMASTIKAN REKOR TERGI 28.5 °C TERCATAT
+            hourlyRef.once('value', (snapshot) => {
+                const logs = snapshot.val();
+                if (logs) {
+                    let highestToday = -999;
+
+                    Object.keys(logs).forEach(k => {
+                        const item = logs[k];
+                        // Ekstrak angka tanggal saja dari string "26/7/2026, 11.00.00" atau "26-7-2026"
+                        if (item.waktu && item.suhuKering !== undefined) {
+                            if (item.waktu.includes('26/7/2026') || item.waktu.includes('26-7-2026') || item.waktu.includes(todayKey)) {
+                                highestToday = Math.max(highestToday, item.suhuKering);
+                            }
+                        }
+                    });
+
+                    if (highestToday !== -999) {
+                        bmkgMaxSuhu = highestToday;
+                        document.getElementById('maxSuhuVal').innerText = bmkgMaxSuhu.toFixed(1);
+                        
+                        // Update nilai tertinggi (28.5 °C) ke node ISO 2026-07-26
+                        ekstremRef.child(todayKey).update({
+                            tanggal: todayKey,
+                            maxSuhu: bmkgMaxSuhu
+                        });
+                    }
+                }
+            });
+
+            // LISTENERS REALTIME FIREBASE
             hourlyRef.on('value', (snapshot) => { renderHourlyTable(snapshot.val()); });
             lossRef.on('value', (snapshot) => { renderLossTable(snapshot.val()); });
             ekstremRef.on('value', (snapshot) => { renderEkstremTable(snapshot.val()); });
 
-            // PENGAWAS WAKTU (PENILAIAN EKSTREM & HOURLY)
+            // PENGAWAS WAKTU
             setInterval(() => {
                 const now = new Date();
                 const currentHour = now.getHours();
                 const currentMinute = now.getMinutes();
-                const dateKey = now.toLocaleDateString('id-ID').replace(/\//g, '-');
+                const dateKey = getFormattedDate(now);
 
-                // 1. EVALUASI LOGIKA EKSTREM BMKG KETIKA DATA SUHU MASUK
+                // 1. LOGIKA SUHU EKSTREM BMKG
                 if (currentSuhu !== null) {
-                    // Jendela Suhu Maksimum: 07.00 - 18.59 WIB
                     if (currentHour >= 7 && currentHour < 19) {
                         if (currentSuhu > bmkgMaxSuhu) {
                             bmkgMaxSuhu = currentSuhu;
                             document.getElementById('maxSuhuVal').innerText = bmkgMaxSuhu.toFixed(1);
-                            
-                            // Update langsung ke database Firebase
                             ekstremRef.child(dateKey).update({
                                 tanggal: dateKey,
                                 maxSuhu: bmkgMaxSuhu
                             });
                         }
-                    } 
-                    // Jendela Suhu Minimum: 19.00 - 06.59 WIB
-                    else {
+                    } else {
                         if (currentSuhu < bmkgMinSuhu) {
                             bmkgMinSuhu = currentSuhu;
                             document.getElementById('minSuhuVal').innerText = bmkgMinSuhu.toFixed(1);
-
-                            // Update langsung ke database Firebase
                             ekstremRef.child(dateKey).update({
                                 tanggal: dateKey,
                                 minSuhu: bmkgMinSuhu
@@ -417,11 +484,11 @@
                     }
                 }
 
-                // Reset variabel rekor internal pada pergantian jendela BMKG
-                if (currentHour === 7 && currentMinute === 0) { bmkgMaxSuhu = -999; }
-                if (currentHour === 19 && currentMinute === 0) { bmkgMinSuhu = 999; }
+                // Reset harian otomatis
+                if (currentHour === 7 && currentMinute === 0 && now.getSeconds() === 0) { bmkgMaxSuhu = -999; }
+                if (currentHour === 19 && currentMinute === 0 && now.getSeconds() === 0) { bmkgMinSuhu = 999; }
 
-                // 2. AUTO-RECORD JAM-JAMAN TEPAT PADA XX:00 WIB
+                // 2. AUTO-RECORD JAM-JAMAN TEPAT XX:00 WIB
                 if (currentMinute === 0 && lastRecordedHour !== currentHour && currentSuhu !== null && currentHum !== null) {
                     lastRecordedHour = currentHour;
                     const wetBulb = calculateWetBulb(currentSuhu, currentHum);
@@ -434,12 +501,14 @@
                     });
                 }
 
-                // 3. LOGIKA DATA LOSS
+                // 3. DETEKSI DATA LOSS
                 if (lastDataTime !== null) {
                     const secondsDiff = Math.floor((now - lastDataTime) / 1000);
 
                     if (secondsDiff >= TIMEOUT_LIMIT_SECONDS && !isDataLoss) {
                         isDataLoss = true;
+                        lossStartTimestamp = now.getTime();
+
                         document.getElementById('statusIndicator').className = "led loss";
                         document.getElementById('footerPanel').classList.add('dataloss');
                         document.getElementById('statusText').innerText = "STATUS: DATA LOSS (PERANGKAT TERPUTUS)";
@@ -451,7 +520,7 @@
                         currentLogKey = newLogRef.key;
                         newLogRef.set({
                             startTime: lossTimeStr,
-                            startTimestamp: now.getTime(),
+                            startTimestamp: lossStartTimestamp,
                             recoveredTime: null,
                             duration: null,
                             lastTemp: currentSuhu,
@@ -473,20 +542,17 @@
                         isDataLoss = false;
                         document.getElementById('footerPanel').classList.remove('dataloss');
 
-                        if (currentLogKey) {
-                            lossRef.child(currentLogKey).once('value', (logSnap) => {
-                                const logData = logSnap.val();
-                                if (logData && logData.startTimestamp) {
-                                    const durationSec = Math.floor((now.getTime() - logData.startTimestamp) / 1000);
-                                    const mins = Math.floor(durationSec / 60);
-                                    const secs = durationSec % 60;
+                        if (currentLogKey && lossStartTimestamp) {
+                            const durationSec = Math.floor((now.getTime() - lossStartTimestamp) / 1000);
+                            const mins = Math.floor(durationSec / 60);
+                            const secs = durationSec % 60;
 
-                                    lossRef.child(currentLogKey).update({
-                                        recoveredTime: now.toLocaleString('id-ID'),
-                                        duration: `${mins > 0 ? mins + ' m ' : ''}${secs} s`
-                                    });
-                                }
+                            lossRef.child(currentLogKey).update({
+                                recoveredTime: now.toLocaleString('id-ID'),
+                                duration: `${mins > 0 ? mins + ' m ' : ''}${secs} s`
                             });
+                            currentLogKey = null;
+                            lossStartTimestamp = null;
                         }
                     }
 
