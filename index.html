@@ -7,10 +7,10 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    
+
     <!-- Font Klasik -->
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Oswald:wght@400;500;700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-    
+
     <style>
         :root {
             --bg-vintage: #e8e4D9;
@@ -97,7 +97,7 @@
         .log-title { font-family: 'Oswald', sans-serif; font-size: 1.1rem; color: var(--bmkg-navy); margin: 0; text-transform: uppercase; }
         .btn-download { background-color: var(--bmkg-navy); color: white; font-family: 'Courier Prime', monospace; font-weight: bold; padding: 8px 16px; border: none; cursor: pointer; border-radius: 4px; }
         .btn-download:hover { background-color: #2b4c7e; }
-        
+
         /* KONTAINER SCROLL MAX 30 BARIS */
         .table-scroll-container {
             max-height: 420px;
@@ -159,7 +159,7 @@
                 <div><span class="stat-value" id="minSuhuVal">--</span><span class="unit">°C</span></div>
             </div>
         </div>
-        
+
         <div class="footer-status" id="footerPanel">
             <div class="connection"><div class="led" id="statusIndicator"></div><span id="statusText">STATUS: MENUNGGU SINYAL RADIO...</span></div>
             <div class="timestamp" id="timeContainer">PEMBARUAN TERAKHIR: <span id="timeVal">--:--:--</span></div>
@@ -240,9 +240,10 @@
             databaseURL: "https://meteo-sangkar-default-rtdb.asia-southeast1.firebasedatabase.app"
         };
 
-        const TIMEOUT_LIMIT_SECONDS = 15; 
+        // Dinaikkan ke 45s agar website tidak buru-buru mengirim data loss palsu
+        const TIMEOUT_LIMIT_SECONDS = 45; 
         const MAX_ROWS_TO_SHOW = 30;
-        
+
         let globalHourlyArray = [];
         let globalLossArray = [];
         let globalEkstremArray = [];
@@ -265,6 +266,16 @@
             const mm = String(date.getMonth() + 1).padStart(2, '0');
             const dd = String(date.getDate()).padStart(2, '0');
             return `${yyyy}-${mm}-${dd}`;
+        }
+
+        function getFormattedTimeStr(date) {
+            const dd = String(date.getDate()).padStart(2, '0');
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const yyyy = date.getFullYear();
+            const hh = String(date.getHours()).padStart(2, '0');
+            const min = String(date.getMinutes()).padStart(2, '0');
+            const ss = String(date.getSeconds()).padStart(2, '0');
+            return `${dd}/${mm}/${yyyy}, ${hh}.${min}.${ss}`;
         }
 
         // --- RENDER TABEL EKSTREM BMKG ---
@@ -298,6 +309,7 @@
             tbody.innerHTML = html || `<tr><td colspan="4" class="empty-log">Memproses data...</td></tr>`;
         }
 
+        // --- RENDER TABEL JAM-JAMAN (DENGAN LOGIKA DEDUPLIKASI KETAT 1 JAM 1 DATA) ---
         function renderHourlyTable(logs) {
             const tbody = document.getElementById('hourlyTableBody');
             if (!logs || Object.keys(logs).length === 0) {
@@ -309,8 +321,42 @@
             let count = 1;
             globalHourlyArray = [];
 
-            Object.keys(logs).reverse().slice(0, MAX_ROWS_TO_SHOW).forEach(key => {
+            // Map untuk mengunci agar 1 Jam HANYA memiliki 1 Data di tampilan UI
+            const uniqueLogsMap = new Map();
+
+            Object.keys(logs).forEach(key => {
                 const log = logs[key];
+                if (log && log.waktu) {
+                    const cleanWaktu = log.waktu.replace(/\s+/g, '');
+                    const parts = cleanWaktu.split(',');
+                    const datePart = parts[0] ? parts[0].trim() : '';
+                    const timePart = parts[1] ? parts[1].trim() : '';
+                    const hour = timePart.split('.')[0]; 
+
+                    // Ekstrak Komponen Tanggal & Samakan Format Leading Zero (DD/MM/YYYY)
+                    const dateComponents = datePart.split('/');
+                    if (dateComponents.length === 3) {
+                        const d = dateComponents[0].padStart(2, '0');
+                        const m = dateComponents[1].padStart(2, '0');
+                        const y = dateComponents[2];
+                        
+                        // Kunci Unik: YYYY-MM-DD_HH (Contoh: "2026-07-28_H01")
+                        const uniqueKey = `${y}-${m}-${d}_H${hour.padStart(2, '0')}`;
+
+                        // Simpan atau utamakan data resmi yang berformat leading zero dari ESP
+                        if (!uniqueLogsMap.has(uniqueKey) || log.waktu.includes(`/${m}/`)) {
+                            // Format ulang string waktu agar selalu seragam (DD/MM/YYYY, HH.MM.SS)
+                            log.waktu = `${d}/${m}/${y}, ${timePart}`;
+                            uniqueLogsMap.set(uniqueKey, log);
+                        }
+                    }
+                }
+            });
+
+            // Urutkan data unik dari yang paling baru
+            const sortedUniqueLogs = Array.from(uniqueLogsMap.values()).reverse().slice(0, MAX_ROWS_TO_SHOW);
+
+            sortedUniqueLogs.forEach(log => {
                 globalHourlyArray.push(log);
                 html += `
                     <tr>
@@ -322,9 +368,11 @@
                     </tr>
                 `;
             });
+
             tbody.innerHTML = html;
         }
 
+        // --- RENDER TABEL DATA LOSS ---
         function renderLossTable(logs) {
             const tbody = document.getElementById('lossTableBody');
             if (!logs || Object.keys(logs).length === 0) {
@@ -439,8 +487,8 @@
                         document.getElementById('statusIndicator').className = "led loss";
                         document.getElementById('footerPanel').classList.add('dataloss');
                         document.getElementById('statusText').innerText = "STATUS: DATA LOSS (PERANGKAT TERPUTUS)";
-                        
-                        const lossTimeStr = now.toLocaleString('id-ID');
+
+                        const lossTimeStr = getFormattedTimeStr(now);
                         document.getElementById('timeContainer').innerHTML = `DATA LOSS TERDETEKSI PADA: <span style="text-decoration: underline;">${lossTimeStr}</span>`;
 
                         const newLogRef = lossRef.push();
@@ -460,7 +508,7 @@
             // MONITORING REALTIME DATA DARI SENSOR
             dbRef.on('value', (snapshot) => {
                 const data = snapshot.val();
-                
+
                 if (data) {
                     const now = new Date();
                     lastDataTime = now; 
@@ -475,7 +523,7 @@
                             const secs = durationSec % 60;
 
                             lossRef.child(currentLogKey).update({
-                                recoveredTime: now.toLocaleString('id-ID'),
+                                recoveredTime: getFormattedTimeStr(now),
                                 duration: `${mins > 0 ? mins + ' m ' : ''}${secs} s`
                             });
                             currentLogKey = null;
