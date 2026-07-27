@@ -23,6 +23,7 @@
             --classic-green: #2F855A;
         }
 
+        /* Mencegah Teks Bisa Di-highlight / Di-copy */
         body {
             font-family: 'Courier Prime', monospace;
             background-color: var(--bg-vintage);
@@ -34,6 +35,10 @@
             margin: 0; padding: 0;
             display: flex; flex-direction: column; align-items: center;
             min-height: 100vh;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
 
         .header {
@@ -234,13 +239,47 @@
 
     </div>
 
+    <!-- SKRIP PROTEKSI FRONTEND (ANTI-INSPECT ELEMENT & DEVTOOLS TRAP) -->
+    <script>
+        // 1. Matikan Klik Kanan
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        // 2. Matikan Kombinasi Tombol Keyboard
+        document.addEventListener('keydown', function(e) {
+            // F12
+            if (e.keyCode === 123) { e.preventDefault(); return false; }
+            // Ctrl+Shift+I (Inspect Element)
+            if (e.ctrlKey && e.shiftKey && e.keyCode === 73) { e.preventDefault(); return false; }
+            // Ctrl+Shift+J (Console)
+            if (e.ctrlKey && e.shiftKey && e.keyCode === 74) { e.preventDefault(); return false; }
+            // Ctrl+Shift+C (Inspect Element Mode)
+            if (e.ctrlKey && e.shiftKey && e.keyCode === 67) { e.preventDefault(); return false; }
+            // Ctrl+U (View Page Source)
+            if (e.ctrlKey && e.keyCode === 85) { e.preventDefault(); return false; }
+            // Ctrl+S (Save Webpage)
+            if (e.ctrlKey && e.keyCode === 83) { e.preventDefault(); return false; }
+        });
+
+        // 3. Debugger Loop Trap (Macetkan DevTools Jika Terbuka)
+        setInterval(function() {
+            const startTime = performance.now();
+            (function() {}.constructor("debugger")());
+            const endTime = performance.now();
+            if (endTime - startTime > 100) {
+                document.body.innerHTML = "<h2 style='text-align:center; margin-top:20%; color:red;'>⛔ AKSES DITOLAK: DEVELOPER TOOLS TERDETEKSI!</h2>";
+            }
+        }, 1000);
+    </script>
+
+    <!-- SKRIP DITORING FIREBASE & DASHBOARD -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBjH29bATrVn5vEVHFi1mgjwbe0jv5als8",
             databaseURL: "https://meteo-sangkar-default-rtdb.asia-southeast1.firebasedatabase.app"
         };
 
-        // Dinaikkan ke 45s agar website tidak buru-buru mengirim data loss palsu
         const TIMEOUT_LIMIT_SECONDS = 45; 
         const MAX_ROWS_TO_SHOW = 30;
 
@@ -309,7 +348,7 @@
             tbody.innerHTML = html || `<tr><td colspan="4" class="empty-log">Memproses data...</td></tr>`;
         }
 
-        // --- RENDER TABEL JAM-JAMAN (DENGAN LOGIKA DEDUPLIKASI KETAT 1 JAM 1 DATA) ---
+        // --- RENDER TABEL JAM-JAMAN (DEDUPLIKASI KETAT 1 JAM 1 DATA) ---
         function renderHourlyTable(logs) {
             const tbody = document.getElementById('hourlyTableBody');
             if (!logs || Object.keys(logs).length === 0) {
@@ -321,7 +360,6 @@
             let count = 1;
             globalHourlyArray = [];
 
-            // Map untuk mengunci agar 1 Jam HANYA memiliki 1 Data di tampilan UI
             const uniqueLogsMap = new Map();
 
             Object.keys(logs).forEach(key => {
@@ -333,19 +371,15 @@
                     const timePart = parts[1] ? parts[1].trim() : '';
                     const hour = timePart.split('.')[0]; 
 
-                    // Ekstrak Komponen Tanggal & Samakan Format Leading Zero (DD/MM/YYYY)
                     const dateComponents = datePart.split('/');
                     if (dateComponents.length === 3) {
                         const d = dateComponents[0].padStart(2, '0');
                         const m = dateComponents[1].padStart(2, '0');
                         const y = dateComponents[2];
                         
-                        // Kunci Unik: YYYY-MM-DD_HH (Contoh: "2026-07-28_H01")
                         const uniqueKey = `${y}-${m}-${d}_H${hour.padStart(2, '0')}`;
 
-                        // Simpan atau utamakan data resmi yang berformat leading zero dari ESP
                         if (!uniqueLogsMap.has(uniqueKey) || log.waktu.includes(`/${m}/`)) {
-                            // Format ulang string waktu agar selalu seragam (DD/MM/YYYY, HH.MM.SS)
                             log.waktu = `${d}/${m}/${y}, ${timePart}`;
                             uniqueLogsMap.set(uniqueKey, log);
                         }
@@ -353,7 +387,6 @@
                 }
             });
 
-            // Urutkan data unik dari yang paling baru
             const sortedUniqueLogs = Array.from(uniqueLogsMap.values()).reverse().slice(0, MAX_ROWS_TO_SHOW);
 
             sortedUniqueLogs.forEach(log => {
@@ -454,14 +487,13 @@
             let currentLogKey = null;
             let lossStartTimestamp = null;
 
-            // LISTENERS REALTIME FIREBASE (Murni Membaca Data)
+            // LISTENERS REALTIME FIREBASE
             hourlyRef.on('value', (snapshot) => { renderHourlyTable(snapshot.val()); });
             lossRef.on('value', (snapshot) => { renderLossTable(snapshot.val()); });
             ekstremRef.on('value', (snapshot) => { 
                 const data = snapshot.val();
                 renderEkstremTable(data); 
 
-                // Perbarui panel ringkasan ekstrem di atas
                 const todayKey = getFormattedDate(new Date());
                 if (data && data[todayKey]) {
                     if (data[todayKey].maxSuhu !== undefined) {
@@ -519,13 +551,21 @@
 
                         if (currentLogKey && lossStartTimestamp) {
                             const durationSec = Math.floor((now.getTime() - lossStartTimestamp) / 1000);
-                            const mins = Math.floor(durationSec / 60);
-                            const secs = durationSec % 60;
 
-                            lossRef.child(currentLogKey).update({
-                                recoveredTime: getFormattedTimeStr(now),
-                                duration: `${mins > 0 ? mins + ' m ' : ''}${secs} s`
-                            });
+                            // HANYA SIMPAN JIKA PUTUS LEBIH DARI/SAMA DENGAN 15 DETIK
+                            if (durationSec >= 15) {
+                                const mins = Math.floor(durationSec / 60);
+                                const secs = durationSec % 60;
+
+                                lossRef.child(currentLogKey).update({
+                                    recoveredTime: getFormattedTimeStr(now),
+                                    duration: `${mins > 0 ? mins + ' m ' : ''}${secs} s`
+                                });
+                            } else {
+                                // Jika putus di bawah 15s (jeda delay biasa), hapus dari Firebase
+                                lossRef.child(currentLogKey).remove();
+                            }
+
                             currentLogKey = null;
                             lossStartTimestamp = null;
                         }
