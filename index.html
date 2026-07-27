@@ -98,7 +98,7 @@
         .btn-download { background-color: var(--bmkg-navy); color: white; font-family: 'Courier Prime', monospace; font-weight: bold; padding: 8px 16px; border: none; cursor: pointer; border-radius: 4px; }
         .btn-download:hover { background-color: #2b4c7e; }
         
-        /* KONTAINER SCROLL MKS 30 BARIS */
+        /* KONTAINER SCROLL MAX 30 BARIS */
         .table-scroll-container {
             max-height: 420px;
             overflow-y: auto;
@@ -246,7 +246,6 @@
         let globalHourlyArray = [];
         let globalLossArray = [];
         let globalEkstremArray = [];
-        let lastRecordedHour = null;
 
         function calculateWetBulb(t, rh) {
             if(rh < 0 || rh > 100 || isNaN(t) || isNaN(rh)) return null;
@@ -268,11 +267,11 @@
             return `${yyyy}-${mm}-${dd}`;
         }
 
-        // --- RENDER TABEL EKSTREM BMKG (BERSIHKAN FORMAT LAMA) ---
+        // --- RENDER TABEL EKSTREM BMKG ---
         function renderEkstremTable(logs) {
             const tbody = document.getElementById('ekstremTableBody');
             if (!logs || Object.keys(logs).length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="empty-log">Belum ada rekor harian tersimpan. Data akan diperbarui otomatis.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="empty-log">Belum ada rekor harian tersimpan.</td></tr>`;
                 return;
             }
 
@@ -281,14 +280,6 @@
             globalEkstremArray = [];
             const isoDatePattern = /^\d{4}-\d{2}-\d{2}$/;
 
-            // OTOMATIS HAPUS NODE FORMAT LAMA DARI FIREBASE (seperti 26-7-2026 atau 25-7-2026)
-            Object.keys(logs).forEach(key => {
-                if (!isoDatePattern.test(key)) {
-                    firebase.database().ref('logs_ekstrem_bmkg').child(key).remove();
-                }
-            });
-
-            // TAMPILKAN HANYA DENGAN FORMAT YYYY-MM-DD
             Object.keys(logs).reverse().slice(0, MAX_ROWS_TO_SHOW).forEach(key => {
                 if (!isoDatePattern.test(key)) return;
 
@@ -409,99 +400,35 @@
 
             let currentSuhu = null;
             let currentHum = null;
-            
-            let bmkgMaxSuhu = -999;
-            let bmkgMinSuhu = 999;
 
             let lastDataTime = null;
             let isDataLoss = false;
             let currentLogKey = null;
             let lossStartTimestamp = null;
 
-            const todayKey = getFormattedDate(new Date());
+            // LISTENERS REALTIME FIREBASE (Murni Membaca Data)
+            hourlyRef.on('value', (snapshot) => { renderHourlyTable(snapshot.val()); });
+            lossRef.on('value', (snapshot) => { renderLossTable(snapshot.val()); });
+            ekstremRef.on('value', (snapshot) => { 
+                const data = snapshot.val();
+                renderEkstremTable(data); 
 
-            // SYNC & SCAN SEMUA LOG JAM-JAMAN UNTUK MEMASTIKAN REKOR TERGI 28.5 °C TERCATAT
-            hourlyRef.once('value', (snapshot) => {
-                const logs = snapshot.val();
-                if (logs) {
-                    let highestToday = -999;
-
-                    Object.keys(logs).forEach(k => {
-                        const item = logs[k];
-                        // Ekstrak angka tanggal saja dari string "26/7/2026, 11.00.00" atau "26-7-2026"
-                        if (item.waktu && item.suhuKering !== undefined) {
-                            if (item.waktu.includes('26/7/2026') || item.waktu.includes('26-7-2026') || item.waktu.includes(todayKey)) {
-                                highestToday = Math.max(highestToday, item.suhuKering);
-                            }
-                        }
-                    });
-
-                    if (highestToday !== -999) {
-                        bmkgMaxSuhu = highestToday;
-                        document.getElementById('maxSuhuVal').innerText = bmkgMaxSuhu.toFixed(1);
-                        
-                        // Update nilai tertinggi (28.5 °C) ke node ISO 2026-07-26
-                        ekstremRef.child(todayKey).update({
-                            tanggal: todayKey,
-                            maxSuhu: bmkgMaxSuhu
-                        });
+                // Perbarui panel ringkasan ekstrem di atas
+                const todayKey = getFormattedDate(new Date());
+                if (data && data[todayKey]) {
+                    if (data[todayKey].maxSuhu !== undefined) {
+                        document.getElementById('maxSuhuVal').innerText = data[todayKey].maxSuhu.toFixed(1);
+                    }
+                    if (data[todayKey].minSuhu !== undefined) {
+                        document.getElementById('minSuhuVal').innerText = data[todayKey].minSuhu.toFixed(1);
                     }
                 }
             });
 
-            // LISTENERS REALTIME FIREBASE
-            hourlyRef.on('value', (snapshot) => { renderHourlyTable(snapshot.val()); });
-            lossRef.on('value', (snapshot) => { renderLossTable(snapshot.val()); });
-            ekstremRef.on('value', (snapshot) => { renderEkstremTable(snapshot.val()); });
-
-            // PENGAWAS WAKTU
+            // MONITORING DETEKSI DATA LOSS
             setInterval(() => {
                 const now = new Date();
-                const currentHour = now.getHours();
-                const currentMinute = now.getMinutes();
-                const dateKey = getFormattedDate(now);
 
-                // 1. LOGIKA SUHU EKSTREM BMKG
-                if (currentSuhu !== null) {
-                    if (currentHour >= 7 && currentHour < 19) {
-                        if (currentSuhu > bmkgMaxSuhu) {
-                            bmkgMaxSuhu = currentSuhu;
-                            document.getElementById('maxSuhuVal').innerText = bmkgMaxSuhu.toFixed(1);
-                            ekstremRef.child(dateKey).update({
-                                tanggal: dateKey,
-                                maxSuhu: bmkgMaxSuhu
-                            });
-                        }
-                    } else {
-                        if (currentSuhu < bmkgMinSuhu) {
-                            bmkgMinSuhu = currentSuhu;
-                            document.getElementById('minSuhuVal').innerText = bmkgMinSuhu.toFixed(1);
-                            ekstremRef.child(dateKey).update({
-                                tanggal: dateKey,
-                                minSuhu: bmkgMinSuhu
-                            });
-                        }
-                    }
-                }
-
-                // Reset harian otomatis
-                if (currentHour === 7 && currentMinute === 0 && now.getSeconds() === 0) { bmkgMaxSuhu = -999; }
-                if (currentHour === 19 && currentMinute === 0 && now.getSeconds() === 0) { bmkgMinSuhu = 999; }
-
-                // 2. AUTO-RECORD JAM-JAMAN TEPAT XX:00 WIB
-                if (currentMinute === 0 && lastRecordedHour !== currentHour && currentSuhu !== null && currentHum !== null) {
-                    lastRecordedHour = currentHour;
-                    const wetBulb = calculateWetBulb(currentSuhu, currentHum);
-                    
-                    hourlyRef.push().set({
-                        waktu: now.toLocaleString('id-ID'),
-                        suhuKering: currentSuhu,
-                        kelembapan: currentHum,
-                        suhuBasah: wetBulb
-                    });
-                }
-
-                // 3. DETEKSI DATA LOSS
                 if (lastDataTime !== null) {
                     const secondsDiff = Math.floor((now - lastDataTime) / 1000);
 
@@ -530,7 +457,7 @@
                 }
             }, 1000);
 
-            // MONITORING SENSOR REALTIME
+            // MONITORING REALTIME DATA DARI SENSOR
             dbRef.on('value', (snapshot) => {
                 const data = snapshot.val();
                 
