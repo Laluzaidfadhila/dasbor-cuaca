@@ -23,7 +23,6 @@
             --classic-green: #2F855A;
         }
 
-        /* Mencegah Teks Bisa Di-highlight / Di-copy */
         body {
             font-family: 'Courier Prime', monospace;
             background-color: var(--bg-vintage);
@@ -239,30 +238,21 @@
 
     </div>
 
-    <!-- SKRIP PROTEKSI FRONTEND (ANTI-INSPECT ELEMENT & DEVTOOLS TRAP) -->
+    <!-- SKRIP PROTEKSI FRONTEND -->
     <script>
-        // 1. Matikan Klik Kanan
         document.addEventListener('contextmenu', function(e) {
             e.preventDefault();
         });
 
-        // 2. Matikan Kombinasi Tombol Keyboard
         document.addEventListener('keydown', function(e) {
-            // F12
             if (e.keyCode === 123) { e.preventDefault(); return false; }
-            // Ctrl+Shift+I (Inspect Element)
             if (e.ctrlKey && e.shiftKey && e.keyCode === 73) { e.preventDefault(); return false; }
-            // Ctrl+Shift+J (Console)
             if (e.ctrlKey && e.shiftKey && e.keyCode === 74) { e.preventDefault(); return false; }
-            // Ctrl+Shift+C (Inspect Element Mode)
             if (e.ctrlKey && e.shiftKey && e.keyCode === 67) { e.preventDefault(); return false; }
-            // Ctrl+U (View Page Source)
             if (e.ctrlKey && e.keyCode === 85) { e.preventDefault(); return false; }
-            // Ctrl+S (Save Webpage)
             if (e.ctrlKey && e.keyCode === 83) { e.preventDefault(); return false; }
         });
 
-        // 3. Debugger Loop Trap (Macetkan DevTools Jika Terbuka)
         setInterval(function() {
             const startTime = performance.now();
             (function() {}.constructor("debugger")());
@@ -273,7 +263,7 @@
         }, 1000);
     </script>
 
-    <!-- SKRIP DITORING FIREBASE & DASHBOARD -->
+    <!-- SKRIP MONITORING FIREBASE & DASHBOARD -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBjH29bATrVn5vEVHFi1mgjwbe0jv5als8",
@@ -307,6 +297,7 @@
             return `${yyyy}-${mm}-${dd}`;
         }
 
+        // FUNGSI UTAMA STANDARISASI WAKTU (DD/MM/YYYY, HH.MM.SS)
         function getFormattedTimeStr(date) {
             const dd = String(date.getDate()).padStart(2, '0');
             const mm = String(date.getMonth() + 1).padStart(2, '0');
@@ -348,7 +339,7 @@
             tbody.innerHTML = html || `<tr><td colspan="4" class="empty-log">Memproses data...</td></tr>`;
         }
 
-        // --- RENDER TABEL JAM-JAMAN (DEDUPLIKASI KETAT 1 JAM 1 DATA) ---
+        // --- RENDER TABEL JAM-JAMAN (DEDUPLIKASI KETAT) ---
         function renderHourlyTable(logs) {
             const tbody = document.getElementById('hourlyTableBody');
             if (!logs || Object.keys(logs).length === 0) {
@@ -405,7 +396,7 @@
             tbody.innerHTML = html;
         }
 
-        // --- RENDER TABEL DATA LOSS ---
+        // --- RENDER TABEL DATA LOSS (DENGAN PENYERAGAMAN FORMAT TANGGAL 28/07/2026) ---
         function renderLossTable(logs) {
             const tbody = document.getElementById('lossTableBody');
             if (!logs || Object.keys(logs).length === 0) {
@@ -417,14 +408,33 @@
             let count = 1;
             globalLossArray = [];
 
+            // Helper merapikan string tanggal lama (28/7 -> 28/07)
+            const fixDateFormat = (str) => {
+                if (!str) return '-';
+                const parts = str.split(',');
+                if (parts.length < 2) return str;
+                const dateParts = parts[0].trim().split('/');
+                if (dateParts.length === 3) {
+                    const d = dateParts[0].padStart(2, '0');
+                    const m = dateParts[1].padStart(2, '0');
+                    const y = dateParts[2];
+                    return `${d}/${m}/${y}, ${parts[1].trim()}`;
+                }
+                return str;
+            };
+
             Object.keys(logs).reverse().slice(0, MAX_ROWS_TO_SHOW).forEach(key => {
                 const log = logs[key];
+                
+                const cleanStartTime = fixDateFormat(log.startTime);
+                const cleanRecoveredTime = fixDateFormat(log.recoveredTime);
+
                 globalLossArray.push(log);
                 html += `
                     <tr>
                         <td>${count++}</td>
-                        <td style="color: red; font-weight: bold;">${log.startTime}</td>
-                        <td style="color: green; font-weight: bold;">${log.recoveredTime || 'Masih Terputus...'}</td>
+                        <td style="color: red; font-weight: bold;">${cleanStartTime}</td>
+                        <td style="color: green; font-weight: bold;">${cleanRecoveredTime}</td>
                         <td>${log.duration || '-'}</td>
                         <td>${log.lastTemp !== undefined && log.lastTemp !== null ? log.lastTemp.toFixed(1) + ' °C' : '-'}</td>
                         <td>${log.lastHum !== undefined && log.lastHum !== null ? log.lastHum.toFixed(1) + ' %' : '-'}</td>
@@ -552,7 +562,7 @@
                         if (currentLogKey && lossStartTimestamp) {
                             const durationSec = Math.floor((now.getTime() - lossStartTimestamp) / 1000);
 
-                            // HANYA SIMPAN JIKA PUTUS LEBIH DARI/SAMA DENGAN 15 DETIK
+                            // HANYA SIMPAN JIKA TERPUTUS LEBIH DARI ATASI 15 DETIK
                             if (durationSec >= 15) {
                                 const mins = Math.floor(durationSec / 60);
                                 const secs = durationSec % 60;
@@ -562,7 +572,7 @@
                                     duration: `${mins > 0 ? mins + ' m ' : ''}${secs} s`
                                 });
                             } else {
-                                // Jika putus di bawah 15s (jeda delay biasa), hapus dari Firebase
+                                // Jika putus singkat di bawah 15 detik, batalkan/hapus dari Firebase
                                 lossRef.child(currentLogKey).remove();
                             }
 
