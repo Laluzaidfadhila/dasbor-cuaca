@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stasiun Observasi - Klasik</title>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
+    <!-- Firebase SDK Compat (v9.23.0) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
     <!-- Font Klasik -->
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Oswald:wght@400;500;700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
@@ -34,10 +35,6 @@
             margin: 0; padding: 0;
             display: flex; flex-direction: column; align-items: center;
             min-height: 100vh;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
         }
 
         .header {
@@ -238,36 +235,17 @@
 
     </div>
 
-    <!-- SKRIP PROTEKSI FRONTEND -->
-    <script>
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-        });
-
-        document.addEventListener('keydown', function(e) {
-            if (e.keyCode === 123) { e.preventDefault(); return false; }
-            if (e.ctrlKey && e.shiftKey && e.keyCode === 73) { e.preventDefault(); return false; }
-            if (e.ctrlKey && e.shiftKey && e.keyCode === 74) { e.preventDefault(); return false; }
-            if (e.ctrlKey && e.shiftKey && e.keyCode === 67) { e.preventDefault(); return false; }
-            if (e.ctrlKey && e.keyCode === 85) { e.preventDefault(); return false; }
-            if (e.ctrlKey && e.keyCode === 83) { e.preventDefault(); return false; }
-        });
-
-        setInterval(function() {
-            const startTime = performance.now();
-            (function() {}.constructor("debugger")());
-            const endTime = performance.now();
-            if (endTime - startTime > 100) {
-                document.body.innerHTML = "<h2 style='text-align:center; margin-top:20%; color:red;'>⛔ AKSES DITOLAK: DEVELOPER TOOLS TERDETEKSI!</h2>";
-            }
-        }, 1000);
-    </script>
-
     <!-- SKRIP MONITORING FIREBASE & DASHBOARD -->
     <script>
+        // Konfigurasi Asli dari Project Settings Firebase Anda
         const firebaseConfig = {
             apiKey: "AIzaSyBjH29bATrVn5vEVHFi1mgjwbe0jv5als8",
-            databaseURL: "https://meteo-sangkar-default-rtdb.asia-southeast1.firebasedatabase.app"
+            authDomain: "meteo-sangkar.firebaseapp.com",
+            databaseURL: "https://meteo-sangkar-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "meteo-sangkar",
+            storageBucket: "meteo-sangkar.firebasestorage.app",
+            messagingSenderId: "587153357763",
+            appId: "1:587153357763:web:abb8e73467cf02ca84db76"
         };
 
         const TIMEOUT_LIMIT_SECONDS = 45; 
@@ -297,7 +275,6 @@
             return `${yyyy}-${mm}-${dd}`;
         }
 
-        // FUNGSI UTAMA STANDARISASI WAKTU (DD/MM/YYYY, HH.MM.SS)
         function getFormattedTimeStr(date) {
             const dd = String(date.getDate()).padStart(2, '0');
             const mm = String(date.getMonth() + 1).padStart(2, '0');
@@ -339,7 +316,7 @@
             tbody.innerHTML = html || `<tr><td colspan="4" class="empty-log">Memproses data...</td></tr>`;
         }
 
-        // --- RENDER TABEL JAM-JAMAN (DEDUPLIKASI KETAT) ---
+        // --- RENDER TABEL JAM-JAMAN ---
         function renderHourlyTable(logs) {
             const tbody = document.getElementById('hourlyTableBody');
             if (!logs || Object.keys(logs).length === 0) {
@@ -396,7 +373,7 @@
             tbody.innerHTML = html;
         }
 
-        // --- RENDER TABEL DATA LOSS (DENGAN PENYERAGAMAN FORMAT TANGGAL 28/07/2026) ---
+        // --- RENDER TABEL DATA LOSS ---
         function renderLossTable(logs) {
             const tbody = document.getElementById('lossTableBody');
             if (!logs || Object.keys(logs).length === 0) {
@@ -408,7 +385,6 @@
             let count = 1;
             globalLossArray = [];
 
-            // Helper merapikan string tanggal lama (28/7 -> 28/07)
             const fixDateFormat = (str) => {
                 if (!str) return '-';
                 const parts = str.split(',');
@@ -482,6 +458,7 @@
         }
 
         try {
+            // Inisialisasi Firebase Compat SDK
             firebase.initializeApp(firebaseConfig);
             const database = firebase.database();
             const dbRef = database.ref('cuaca');
@@ -562,7 +539,6 @@
                         if (currentLogKey && lossStartTimestamp) {
                             const durationSec = Math.floor((now.getTime() - lossStartTimestamp) / 1000);
 
-                            // HANYA SIMPAN JIKA TERPUTUS LEBIH DARI ATASI 15 DETIK
                             if (durationSec >= 15) {
                                 const mins = Math.floor(durationSec / 60);
                                 const secs = durationSec % 60;
@@ -572,7 +548,6 @@
                                     duration: `${mins > 0 ? mins + ' m ' : ''}${secs} s`
                                 });
                             } else {
-                                // Jika putus singkat di bawah 15 detik, batalkan/hapus dari Firebase
                                 lossRef.child(currentLogKey).remove();
                             }
 
